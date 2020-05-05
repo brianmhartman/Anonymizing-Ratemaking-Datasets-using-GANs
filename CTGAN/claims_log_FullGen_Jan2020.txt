@@ -1,0 +1,69 @@
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+✔ ggplot2 3.2.1     ✔ purrr   0.3.3
+✔ tibble  2.1.3     ✔ dplyr   0.8.3
+✔ tidyr   1.0.0     ✔ stringr 1.4.0
+✔ readr   1.3.1     ✔ forcats 0.4.0
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+Epoch 1, Loss G: 0.7385, Loss D: 0.1339
+Epoch 5, Loss G: -0.7465, Loss D: 0.0274
+Epoch 10, Loss G: 0.0198, Loss D: -0.1790
+Epoch 15, Loss G: -0.3358, Loss D: -0.1705
+Epoch 20, Loss G: -0.5207, Loss D: -0.0765
+Epoch 25, Loss G: -0.2832, Loss D: -0.1709
+Epoch 30, Loss G: -0.8618, Loss D: -0.1716
+Epoch 35, Loss G: -0.7268, Loss D: 0.0143
+Epoch 40, Loss G: -0.6580, Loss D: -0.0541
+Epoch 45, Loss G: -0.4587, Loss D: -0.0612
+Epoch 50, Loss G: -0.7374, Loss D: -0.1099
+Epoch 55, Loss G: -0.5193, Loss D: -0.0597
+Epoch 60, Loss G: -0.7200, Loss D: -0.0816
+Epoch 65, Loss G: -0.8357, Loss D: -0.0727
+Epoch 70, Loss G: -0.7360, Loss D: -0.0956
+Epoch 75, Loss G: -0.5905, Loss D: -0.0050
+Epoch 80, Loss G: -0.9326, Loss D: -0.1212
+Epoch 85, Loss G: -1.0360, Loss D: -0.0461
+Epoch 90, Loss G: -0.8024, Loss D: -0.0151
+Epoch 95, Loss G: -0.9430, Loss D: -0.1161
+Epoch 100, Loss G: -0.8994, Loss D: -0.0863
+Epoch 105, Loss G: -0.9440, Loss D: -0.0647
+Epoch 110, Loss G: -0.9827, Loss D: -0.0432
+Epoch 115, Loss G: -0.6359, Loss D: -0.0447
+Epoch 120, Loss G: -1.0040, Loss D: -0.0861
+Epoch 125, Loss G: -1.1839, Loss D: -0.0251
+Epoch 130, Loss G: -0.9822, Loss D: -0.0448
+Epoch 135, Loss G: -0.9695, Loss D: -0.0715
+Epoch 140, Loss G: -0.9946, Loss D: -0.0382
+Epoch 145, Loss G: -0.6962, Loss D: -0.0412
+Epoch 150, Loss G: -0.7034, Loss D: -0.0653
+Epoch 155, Loss G: -0.9011, Loss D: -0.0257
+Epoch 160, Loss G: -0.9966, Loss D: -0.0269
+Epoch 165, Loss G: -0.8310, Loss D: -0.0544
+Epoch 170, Loss G: -1.0071, Loss D: -0.0769
+Epoch 175, Loss G: -1.0483, Loss D: -0.0839
+Epoch 180, Loss G: -0.5858, Loss D: -0.0616
+Epoch 185, Loss G: -0.8340, Loss D: -0.0427
+Epoch 190, Loss G: -0.8979, Loss D: -0.0374
+Epoch 195, Loss G: -0.7363, Loss D: -0.0512
+Epoch 200, Loss G: -0.7561, Loss D: -0.0784
+Epoch 205, Loss G: -1.0995, Loss D: -0.0227
+Epoch 210, Loss G: -1.0627, Loss D: -0.0426
+Epoch 215, Loss G: -1.1810, Loss D: -0.0422
+Epoch 220, Loss G: -1.2492, Loss D: -0.0471
+Epoch 225, Loss G: -1.0524, Loss D: -0.0782
+Epoch 230, Loss G: -1.0138, Loss D: -0.0514
+Epoch 235, Loss G: -0.8461, Loss D: -0.0385
+Epoch 240, Loss G: -1.0546, Loss D: -0.0167
+Epoch 245, Loss G: -1.0357, Loss D: -0.0405
+Epoch 250, Loss G: -0.8338, Loss D: -0.0552
+Epoch 255, Loss G: -1.3488, Loss D: -0.0583
+Epoch 260, Loss G: -1.1956, Loss D: -0.0463
+Epoch 265, Loss G: -0.9649, Loss D: -0.0297
+Epoch 270, Loss G: -0.9438, Loss D: -0.0684
+Epoch 275, Loss G: -1.1295, Loss D: -0.0453
+Epoch 280, Loss G: -1.1570, Loss D: -0.0716
+Epoch 285, Loss G: -1.1965, Loss D: -0.0485
+Epoch 290, Loss G: -0.8237, Loss D: -0.0694
+Epoch 295, Loss G: -1.2223, Loss D: -0.0291
+Epoch 300, Loss G: -1.1015, Loss D: -0.0011

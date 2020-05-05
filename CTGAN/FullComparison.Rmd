@@ -1,0 +1,354 @@
+---
+title: "Simulated Data Test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(broom)
+library(modelr)
+library(purrr)
+library(readr)
+library(CASdatasets)
+data("freMTPL2freq")
+
+n_draws <- 1000
+sample_size <- nrow(freMTPL2freq)
+pred_name <- "Predictions"
+
+all_subsets <- matrix(sample(1:3,size=nrow(freMTPL2freq)*n_draws,replace=T, prob = c(0.7, 0.15, 0.15)),ncol = n_draws)
+
+#1 = Train, 2 = Validate, 3 = Test
+
+setwd("G:/My Drive/Cote-Hartman/R/Jan2020")
+
+thin <- 100
+
+# all_GAN_data <- list.files("Simulated_Datasets", pattern = "*.csv", full.names = TRUE )
+
+```
+
+
+
+```{r}
+# ### Read in and clean the GAN data
+# 
+# GAN_data <- read_csv("190123_example_dat.csv", col_types = cols(X1 = col_skip()))
+# 
+# ## ClaimNb
+# ClaimNb <- GAN_data %>% 
+#   select(starts_with("ClaimNb")) %>% 
+#   as.matrix() %*% 0:4 
+# 
+# Power_names <- GAN_data %>% 
+#   slice(1:10) %>% 
+#   select(starts_with("Power")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","")
+# 
+# Power <- GAN_data %>% 
+#   select(starts_with("Power")) %>% 
+#   as.matrix() %*% 1:length(Power_names) %>% 
+#   Power_names[.]
+# 
+# DriverAge_range <- GAN_data %>% 
+#   select(starts_with("DriverAge")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","") %>% 
+#   as.numeric
+# 
+# DriverAge <- GAN_data %>% 
+#   select(starts_with("DriverAge")) %>% 
+#   as.matrix %*% DriverAge_range
+#   
+# Brand_names <- GAN_data %>% 
+#   select(starts_with("Brand")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","")
+# 
+# Brand <- GAN_data %>% 
+#   select(starts_with("Brand")) %>% 
+#   as.matrix() %*% 1:length(Brand_names) %>% 
+#   Brand_names[.]
+# 
+# Gas_names <- GAN_data %>% 
+#   select(starts_with("Gas")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","")
+# 
+# Gas <- GAN_data %>% 
+#   select(starts_with("Gas")) %>% 
+#   as.matrix() %*% 1:length(Gas_names) %>% 
+#   Gas_names[.]
+# 
+# Region_names <- GAN_data %>% 
+#   select(starts_with("Region")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","")
+# 
+# Region <- GAN_data %>% 
+#   select(starts_with("Region")) %>% 
+#   as.matrix() %*% 1:length(Region_names) %>% 
+#   Region_names[.]
+# 
+# Exposure_range <- GAN_data %>% 
+#   select(starts_with("Exposure")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","") %>% 
+#   as.numeric
+# 
+# Exposure <- GAN_data %>% 
+#   select(starts_with("Exposure")) %>% 
+#   as.matrix %*% Exposure_range %>% 
+#   c(0.05 + 0:9*0.1,1,1.05)[.]
+# 
+# 
+# density_vec <- numeric(nrow(freMTPLfreq))
+# density_vec <- density_vec + (freMTPLfreq$Density < 5000) * 1
+# density_vec <- density_vec + (freMTPLfreq$Density >= 5000 & freMTPLfreq$Density < 10000) * 2
+# density_vec <- density_vec + (freMTPLfreq$Density >= 10000 & freMTPLfreq$Density < 15000) * 3
+# density_vec <- density_vec + (freMTPLfreq$Density >= 15000 & freMTPLfreq$Density < 25000) * 4
+# density_vec <- density_vec + (freMTPLfreq$Density >= 25000) * 5
+# # table(density_vec)
+# Density_range <- round(tapply(freMTPLfreq$Density,density_vec,mean))
+# 
+# Density <- GAN_data %>% 
+#   select(starts_with("Density")) %>% 
+#   as.matrix %*% Density_range
+# 
+# 
+# CarAge_range <- GAN_data %>% 
+#   select(starts_with("CarAge")) %>% 
+#   names() %>% 
+#   str_replace("^.+_","") %>% 
+#   as.numeric
+# 
+# CarAge <- GAN_data %>% 
+#   select(starts_with("CarAge")) %>% 
+#   as.matrix %*% CarAge_range
+# 
+# GAN_data_clean <- tibble(ClaimNb,Exposure,Power,CarAge,DriverAge,Brand,Gas,Region,Density) %>% 
+#   mutate_at(vars(ClaimNb, CarAge, DriverAge, Density), as.integer) %>% 
+#   mutate_at(vars(Power,Brand,Gas,Region),factor)
+
+real_data <- freMTPL2freq %>% 
+  mutate(
+    num_claims = pmin(ClaimNb, 4),
+    exposure = pmin(Exposure, 1),
+    vehicle_power = pmin(VehPower, 9),
+    vehicle_age = case_when(
+      VehAge < 1 ~ "< 1",
+      VehAge <= 10 ~ "[1, 10]",
+      TRUE ~ "> 10"
+    ),
+    driver_age = case_when(
+      DrivAge < 21 ~ "< 21",
+      DrivAge < 26 ~ "[21, 26)",
+      DrivAge < 31 ~ "[26, 31)",
+      DrivAge < 41 ~ "[41, 51)",
+      DrivAge < 71 ~ "[51, 71)", 
+      TRUE ~ ">= 71"
+    ),
+    bonus_malus = pmin(BonusMalus, 150),
+    density = log(Density)#,
+  ) %>% 
+  select(-IDpol)
+
+GAN_data <- read_csv("FullGen/claims_gen_data.csv")
+
+GAN_data <- GAN_data %>% 
+  mutate(
+    vehicle_age = case_when(
+      vehicle_age == "< 1" ~ "lt_1",
+      vehicle_age == "[1, 10]" ~ "1-10",
+      vehicle_age == "> 10" ~ "gt_10"
+    ),
+    driver_age = case_when(
+      driver_age == "< 21" ~ "lt_21",
+      driver_age == "[21, 26)" ~ "21-26",
+      driver_age == "[26, 31)" ~ "26-31",
+      driver_age == "[41, 51)" ~ "31-41",
+      driver_age == "[51, 71)" ~ "41-71", 
+      driver_age == ">= 71" ~ "gt_71"
+    ),
+  )
+
+real_data <- real_data %>% 
+  mutate(
+    vehicle_age = case_when(
+      vehicle_age == "< 1" ~ "lt_1",
+      vehicle_age == "[1, 10]" ~ "1-10",
+      vehicle_age == "> 10" ~ "gt_10"
+    ),
+    driver_age = case_when(
+      driver_age == "< 21" ~ "lt_21",
+      driver_age == "[21, 26)" ~ "21-26",
+      driver_age == "[26, 31)" ~ "26-31",
+      driver_age == "[41, 51)" ~ "31-41",
+      driver_age == "[51, 71)" ~ "41-71", 
+      driver_age == ">= 71" ~ "gt_71"
+    ),
+  )
+
+
+options(scipen=999)
+
+get_summary <- function(currentData) {
+  c(table(currentData$num_claims),
+  summary(currentData$exposure),
+  table(currentData$vehicle_power),
+  table(currentData$vehicle_age),
+  table(currentData$driver_age),
+  summary(currentData$bonus_malus),
+  summary(currentData$density)
+  )
+}
+
+all_variables <- c(rep("num_claims",5),rep("exposure",6),rep("vehicle_power",6),rep("vehicle_age",3),rep("driver_age",6),rep("bonus_malus",6),rep("density",6))
+
+real_dat <- get_summary(real_data)
+GAN_dat <- get_summary(GAN_data)
+all_out <- tibble(real_dat,GAN_dat)
+
+
+all_out <- as.matrix(all_out %>% 
+  mutate(abs_diff = real_dat-GAN_dat, prop_diff = abs_diff/real_dat))
+
+rownames(all_out) <- paste(all_variables, names(real_dat))
+round(all_out,2)
+
+
+```
+
+
+```{r}
+
+
+for(i in 1L:n_draws){
+  
+  print(paste(i,Sys.time()))
+  
+  comparison_value <- 1  #   1 = Train as Compare, 2=Validate as Compare
+  
+  comparison_index <- all_subsets[,i] == comparison_value
+  
+  real_index <- all_subsets[,i] == (3 - comparison_value)
+  
+  # real_data <- freMTPLfreq %>% 
+  #   mutate(Power = factor(Power)) %>% 
+  #   sample_n(sample_size)
+  # 
+  # while(sum(real_data %>% select(ClaimNb)) < 1){
+  #   real_data <- freMTPLfreq %>% 
+  #   mutate(Power = factor(Power)) %>% 
+  #   sample_n(sample_size)
+  # }
+  
+  ### Randomly Sampled
+  
+  random_y_data <- real_data %>% 
+    filter(real_index) %>% 
+    mutate(num_claims = sample(num_claims, replace=TRUE))
+  
+  completely_random_data <- random_y_data %>%
+    mutate_at(vars(-num_claims),sample, replace=TRUE)
+  
+  glm_compare <- real_data %>% 
+    filter(comparison_index) %>% 
+    glm(num_claims ~ vehicle_power + vehicle_age + driver_age + density, data = ., offset = log(exposure), family="poisson")
+  
+  glm_real <- real_data %>% 
+    filter(real_index) %>% 
+    glm(num_claims ~ vehicle_power + vehicle_age + driver_age + density, data = ., offset = log(exposure), family="poisson")
+  
+  glm_random_y <- random_y_data %>%  
+    glm(num_claims ~ vehicle_power + vehicle_age + driver_age + density, data = ., offset = log(exposure), family="poisson")
+  
+  glm_completely_random <- completely_random_data %>%  
+    glm(num_claims ~ vehicle_power + vehicle_age + driver_age + density, data = ., offset = log(exposure), family="poisson")
+  
+  glm_GAN <- GAN_data %>% 
+    filter(real_index) %>% 
+    glm(num_claims ~ vehicle_power + vehicle_age + driver_age + density, data = ., offset = log(exposure), family="poisson")
+  
+  params_GAN <- glm_GAN %>% 
+      tidy %>% 
+      select(estimate)
+  
+  params_compare <- glm_compare %>% 
+    tidy %>% 
+    select(term, estimate)
+
+  params_real <- glm_real %>% 
+    tidy %>% 
+    select(estimate)
+  
+  params_random_y <- glm_random_y %>% 
+    tidy %>% 
+    select(estimate)
+  
+  params_completely_random <- glm_completely_random %>% 
+    tidy %>% 
+    select(estimate)
+  
+  # curr_params <- tibble(term = params_compare$term, compare=params_compare$estimate, completely_random = params_completely_random$estimate, real = params_real$estimate, random_y = params_random_y$estimate, iter=i)
+  
+  # if(i == 1) all_params <- curr_params else all_params <- bind_rows(all_params, curr_params)
+  
+  pred_data <- real_data %>% filter(all_subsets[,i] == 3)
+  
+  pred_compare <- predict(glm_compare, newdata = pred_data, type="response")
+  
+  pred_real <- predict(glm_real, newdata = pred_data, type="response")
+  
+  pred_random_y <- predict(glm_random_y, newdata = pred_data, type="response")
+  
+  pred_completely_random <- predict(glm_completely_random, newdata = pred_data, type="response")
+  
+  pred_GAN <- predict(glm_GAN, newdata = pred_data, type="response")
+  
+  # curr_preds <- tibble(compare = pred_compare, real = pred_real, random_y = pred_random_y, completely_random = pred_completely_random, iter=i)
+  
+  # if(i == 1) all_preds <- curr_preds else all_preds <- bind_rows(all_preds, curr_preds)
+  
+
+this_all_diff <- params_compare %>% 
+    mutate(diff=abs(estimate - params_real$estimate), datatype="Real") %>% 
+    bind_rows(
+      params_compare %>% mutate(diff=abs(estimate - params_random_y$estimate), datatype="Random Y"),
+      params_compare %>% mutate(diff=abs(estimate - params_completely_random$estimate), datatype="Completely Random"),
+      params_compare %>% mutate(diff=abs(estimate - params_GAN$estimate), datatype="GAN")
+    ) %>% 
+    add_row(term=pred_name, diff=median(abs(pred_compare-pred_real)), datatype = "Real") %>% 
+    add_row(term=pred_name, diff=median(abs(pred_compare-pred_random_y)), datatype = "Random Y") %>% 
+    add_row(term=pred_name, diff=median(abs(pred_compare-pred_completely_random)),datatype = "Completely Random") %>%
+    add_row(term=pred_name, diff=median(abs(pred_compare-pred_GAN)),datatype = "GAN") %>%
+    mutate(iter=i, estimate=NULL)
+  
+  
+  if(i==1) all_diff <- this_all_diff else all_diff <- all_diff %>% bind_rows(this_all_diff)
+  
+  if(floor(i/thin)==(i/thin)) {
+    save(all_diff,file=paste0("RData/UnivariateMatched_Iter_",i,".RData"))
+    print("Saved")
+    
+    
+    current_term <- "Powere"
+    
+    for(current_term in unique(all_diff$term)){
+      all_diff %>% 
+        filter(term==current_term) %>% 
+        ggplot + 
+        geom_density(mapping = aes(x=diff, color=datatype))+
+        labs(title=current_term)
+    ggsave(paste0("Plots/Iter_",i,"_Plot_",current_term,".pdf"), height = 5, width = 5, limitsize = FALSE)
+    }
+    
+    print("Plotted")
+  }
+  
+}
+
+```
+
