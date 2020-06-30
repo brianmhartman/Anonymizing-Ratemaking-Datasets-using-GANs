@@ -1,4 +1,4 @@
-# Auto_GAN
+# MC-WGAN-GP
 
 ## GANs
 This repository contains the code for two GAN setup. I refer to the GANs as the single GAN and the Multi GAN.
